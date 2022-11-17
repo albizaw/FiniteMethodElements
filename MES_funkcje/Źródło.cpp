@@ -331,12 +331,15 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 	}
 }
 
-double **JacobiMatrix(Elem4& elem, grid& newGrid)
+double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura)
 {
 	vector <double> x;
 	vector <double> y;
-	
 
+	x = { 0,0.025,0.025,0 };
+	y = { 0,0,0.025,0.025 };
+	
+	/*
 	for (int i = 0; i < 4; i++)
 	{
 		int k = newGrid.EL[0].ID[i];
@@ -345,23 +348,80 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid)
 		y.push_back(newGrid.ND[k - 1].y);
 		cout << x[i] << " " << y[i] << endl;
 	}
-
+	*/
 	
 	int k = elem.numberOfPoints;
 	int k2 = k * k;
 	
 	double** allJacobis;
+	double** Nidx;
+	double** Nidy;
+	double** H;
 ;
 		allJacobis = new double* [k2];
+		Nidx = new double* [k2];
+		Nidy = new double* [k2];
+		H = new double* [k2];
 		for (int i = 0; i < k2; i++)
 		{
 			allJacobis[i] = new double[4];
+			Nidx[i] = new double[4];
+			Nidy[i] = new double[4];
+			H[i] = new double[4];
 			
 		}
 
+		double*** Hpci;
+		double*** Hnx;
+		double*** Hny;
+
+		Hnx = new double** [k2];
+		Hny = new double** [k2];
+		Hpci = new double** [k2];
+
+		for (int j = 0; j < k2; j++)
+		{
+			Hnx[j] = new double* [k2];
+			Hny[j] = new double* [k2];
+			Hpci[j] = new double* [k2];
+
+			for (int k = 0; k < k2; k++)
+			{
+				Hnx[j][k] = new double[4];
+				Hny[j][k] = new double[4];
+				Hpci[j][k] = new double[4];
+			}
+		}
+
+	
+		int counter;
+		double eta;
+		double ksi;
+
 	for (int i = 0; i < k2; i++)
 	{
-		double JacobiMat[2][2];
+
+		if (i % k == 0)
+		{
+			counter = 0;
+		}
+
+		if (k == 2)
+		{
+			ksi = kwadratura.W2p[counter];
+
+			eta = kwadratura.W2p[i / k];
+		}
+		else if (k == 3)
+		{
+			ksi = kwadratura.W3p[counter];
+
+			eta = kwadratura.W3p[i / k];
+		}
+
+		
+
+		//double JacobiMat[2][2];
 		double sumxksi = 0;
 		double sumyksi = 0;
 		double sumxeta = 0;
@@ -376,17 +436,112 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid)
 
 		}
 
-		cout << "[" << sumxksi << " " << sumyksi << " " << sumxeta << " " << sumyeta << "]" << endl;
+		//cout << "[" << sumxksi << " " << sumyksi << " " << sumxeta << " " << sumyeta << "]" << endl;
 
 		allJacobis[i][0] = sumxksi;
 		allJacobis[i][1] = sumyksi;
 		allJacobis[i][2] = sumxeta;
 		allJacobis[i][3] = sumyeta;
+
+		//1) dNi / dx
+		double detJ = allJacobis[i][0] * allJacobis[i][3] - allJacobis[i][1] * allJacobis[i][4];
+
+		//odwrócenie macierzy
+		double pom;
+		pom = allJacobis[i][0];
+		allJacobis[i][0] = allJacobis[i][3];
+		allJacobis[i][3] = pom;
+		allJacobis[i][1] = -allJacobis[i][1];
+		allJacobis[i][2] = -allJacobis[i][2];
+
+		//cout << "DetJ:" << detJ << endl;
+
+		//wyznacznik 1/det
+		double reverseDetJ = 1. / detJ;
+		//cout << reverseDetJ;
+		for (int k = 0; k < 4; k++)
+		{
+			allJacobis[i][k] *= reverseDetJ;
+			cout << allJacobis[i][k] << " | ";
+		}
+
+		cout << endl;
+
+		//slajd13 macierz tabeladwuwymiarowazmacierza
+
+		//Ni/dx macierz
+
+		for (int j = 0; j < 4; j++)
+		{
+			Nidx[i][j] = allJacobis[i][0] * elem.tabKsi[i][j] + allJacobis[i][1] * elem.tabEta[i][j];
+			Nidy[i][j] = allJacobis[i][2] * elem.tabKsi[i][j] + allJacobis[i][3] * elem.tabEta[i][j];
+			
+		}
 		
+		//macierzH dla punktów ca³kowania
+
+		double kt = 30;
+
+		cout << "Ksi: " << ksi << endl;
+		cout << "Eta: " << eta << endl;
+
+		for (int j = 0; j < k2; j++)
+		{
+			
+			for (int k = 0; k < 4; k++)
+			{
+				Hnx[i][j][k] = Nidx[i][j] * Nidx[i][k];
+				Hny[i][j][k] = Nidy[i][j] * Nidy[i][k];
+				Hpci[i][j][k] = kt * (Hnx[i][j][k] + Hny[i][j][k]) * detJ;
+				//obliczone z wagami
+				Hpci[i][j][k] *= ksi * eta;
+				//H[j][k] += Hpci[i][j][k];
+				//cout << Hpci[i][j][k] << " ";
+				
+			}
+			cout << endl;
+			
+		}
+		cout << endl;
+
+		counter++;
+
 	}
 
-	return allJacobis;
+	//dodawanie macierzy H; zmiany wprowadzic w schemacie punktow
+	double suma;
+	//i - kolumny
+	//j - wiersz
+	//
+	for (int i = 0; i < 4; i++)
+	{
+		suma = 0;
+
+		for (int j = 0; j < 4; j++)
+		{
+			suma = Hpci[0][i][j];
+		
+			
+			for (int k = 1;  k < k2;  k++)
+			{
+				suma += Hpci[k][i][j];
+				
+			}
+
+			//cout << suma << " | ";
+			
+			H[i][j] = suma;
+			cout << H[i][j] << " ";
+		}
+		cout << endl;
+	}
+	
+
+	return H;
 }
+
+
+
 
 
 
@@ -624,7 +779,7 @@ int main()
 	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
 	Elem4 elem(2);
 	elem4(kwadratura, elem);
-	JacobiMatrix(elem, newGrid);
+	JacobiMatrix(elem, newGrid, kwadratura);
 
 
 
