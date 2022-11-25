@@ -48,6 +48,9 @@ struct kwadratury {
 	double PC3p[3] = { -sqrt(0.6),0,sqrt(0.6)};
 	double W3p[3] = { 5/9.,8/9.,5/9. };
 
+	double PC4p[4] = { -0.861136, -0.339981, 0.339981, 0.861136 };
+	double W4p[4] = { 0.347855, 0.652145, 0.652145, 0.347855 };
+
 };
 
 
@@ -215,17 +218,6 @@ double N4eta(double ksi)
 }
 
 
-
-struct Elem2D {
-	double tabKsi[4][4];
-	double tabEta[4][4];
-};
-
-struct Elem3D {
-	double tabKsi[9][4];
-	double tabEta[9][4];
-};
-
 //przekazujemy flagê, która tworzy odpowiedni wymiar tablicy
 struct Elem4 {
 	int numberOfPoints;
@@ -329,26 +321,61 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 
 		}
 	}
+
+	if (elem.numberOfPoints == 4) {
+		for (int i = 0; i < elem.numberOfPoints * elem.numberOfPoints; i++)
+		{
+
+
+
+			if (i % 4 == 0)
+			{
+				counter = 0;
+			}
+
+
+			ksi = kwadratury.PC4p[counter];
+			eta = kwadratury.PC4p[i / 4];
+
+
+			elem.tabKsi[i][0] = N1ksi(eta);
+			elem.tabKsi[i][1] = N2ksi(eta);
+			elem.tabKsi[i][2] = N3ksi(eta);
+			elem.tabKsi[i][3] = N4ksi(eta);
+
+			elem.tabEta[i][0] = N1eta(ksi);
+			elem.tabEta[i][1] = N2eta(ksi);
+			elem.tabEta[i][2] = N3eta(ksi);
+			elem.tabEta[i][3] = N4eta(ksi);
+
+
+			//cout << eta << " " << N1ksi(eta) << " " << N2ksi(eta) << " " << N3ksi(eta) << " " << N4ksi(eta) << endl;
+			//cout << ksi << " " << N1eta(kwadratury.PC2p[counter]) << " " << N2eta(kwadratury.PC2p[counter]) << " " << N3eta(kwadratury.PC2p[counter]) << " " << N4eta(kwadratury.PC2p[counter]) << endl;
+
+			counter++;
+		}
+	}
+
 }
 
-double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura)
+double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _nrEl, GlobalData& globe)
 {
 	vector <double> x;
 	vector <double> y;
 
-	x = { 0,0.025,0.025,0 };
-	y = { 0,0,0.025,0.025 };
+	//x = { 0,0.025,0.025,0 };
+	//y = { 0,0,0.025,0.025 };
 	
-	/*
+	int nrEl = _nrEl;
 	for (int i = 0; i < 4; i++)
 	{
-		int k = newGrid.EL[0].ID[i];
-		cout << k << endl;
+		int k = newGrid.EL[nrEl].ID[i];
+		//cout << k << endl;
 		x.push_back(newGrid.ND[k-1].x);
 		y.push_back(newGrid.ND[k - 1].y);
-		cout << x[i] << " " << y[i] << endl;
+		//cout << x[i] << " " << y[i] << endl;
 	}
-	*/
+	
 	
 	int k = elem.numberOfPoints;
 	int k2 = k * k;
@@ -418,6 +445,11 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura)
 
 			eta = kwadratura.W3p[i / k];
 		}
+		else if (k == 4)
+		{
+			ksi = kwadratura.W4p[counter];
+			eta = kwadratura.W4p[i / k];
+		}
 
 		
 
@@ -462,10 +494,10 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura)
 		for (int k = 0; k < 4; k++)
 		{
 			allJacobis[i][k] *= reverseDetJ;
-			cout << allJacobis[i][k] << " | ";
+			//cout << allJacobis[i][k] << " | ";
 		}
 
-		cout << endl;
+		//cout << endl;
 
 		//slajd13 macierz tabeladwuwymiarowazmacierza
 
@@ -480,12 +512,14 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura)
 		
 		//macierzH dla punktów ca³kowania
 
-		double kt = 30;
 
-		cout << "Ksi: " << ksi << endl;
-		cout << "Eta: " << eta << endl;
+		//double kt = 25;
+		double kt = globe.Conductivity;
 
-		for (int j = 0; j < k2; j++)
+		//cout << "Ksi: " << ksi << endl;
+		//cout << "Eta: " << eta << endl;
+
+		for (int j = 0; j < 4; j++)
 		{
 			
 			for (int k = 0; k < 4; k++)
@@ -499,10 +533,10 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura)
 				//cout << Hpci[i][j][k] << " ";
 				
 			}
-			cout << endl;
+			//cout << endl;
 			
 		}
-		cout << endl;
+		//cout << endl;
 
 		counter++;
 
@@ -528,16 +562,146 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura)
 				
 			}
 
-			//cout << suma << " | ";
+			
 			
 			H[i][j] = suma;
-			cout << H[i][j] << " ";
+			//cout << H[i][j] << " ";
 		}
-		cout << endl;
+		//cout << endl;
 	}
 	
 
 	return H;
+}
+
+double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, GlobalData& globe)
+{
+	double*** HforAll;
+	int nE = newGrid.nE;
+	HforAll = new double** [nE];
+
+	for (int j = 0; j < 4; j++)
+	{
+		
+		HforAll[j] = new double* [4];
+
+		for (int k = 0; k < 4; k++)
+		{
+			HforAll[k] = new double* [4];
+		}
+	}
+
+	for (int i = 0; i < 9; i++)
+	{
+
+		HforAll[i] = JacobiMatrix(elem, newGrid, kwadratura, i, globe);
+		
+	}
+
+	for (int i = 0; i < 9; i++)
+	{
+		cout << "Macierz lokalna H dla elementu nr [" << i + 1 << "]" << endl;
+		for (int j = 0; j < 4; j++)
+		{
+			for (int k = 0; k < 4; k++)
+			{
+				cout << HforAll[i][j][k] << " | ";
+			}
+			cout << endl;
+		}
+
+		cout << endl << endl;
+	}
+
+	return HforAll;
+
+	
+}
+
+void HGlobal(double ***HforAllElements, grid& newGrid) {
+	int countOfNodes = newGrid.nN;
+
+	double** HGlobal;
+	HGlobal = new double* [countOfNodes];
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		HGlobal[i] = new double [countOfNodes];
+	};
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		for (int j = 0; j < countOfNodes; j++)
+		{
+			HGlobal[i][j] = 0;	
+		}
+	}
+
+	
+	
+
+	for (int el = 0; el < 9; el++)
+	{
+
+		vector <int> ID;
+
+		//dla kazdego elementu wczytujemy ID
+		for (int i = 0; i < 4; i++)
+		{
+			int k = newGrid.EL[el].ID[i];
+			//cout << k << " | ";
+			ID.push_back(k);
+		}
+
+		//cout << endl;
+
+		for (int j = 0; j < 4; j++)
+		{
+
+			for (int k = 0; k < 4; k++)
+			{
+				
+				HGlobal[ID[j]-1][ID[k]-1] += HforAllElements[el][j][k];
+				//cout << HGlobal[ID[j]-1][ID[k]-1] << endl;
+			}
+			//cout << endl;
+
+		}
+
+	}
+
+
+	cout << "Macierz globalna H: " << endl;
+	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		for (int j = 0; j < countOfNodes; j++)
+		{
+
+			if (HGlobal[i][j] == 0)
+			{
+				cout  <<HGlobal[i][j] << "        |";
+			}
+			else if (HGlobal[i][j] < 0 && HGlobal[i][j]>-10)
+			{
+				cout << HGlobal[i][j] << " |";
+			}
+			else
+			{
+				cout << HGlobal[i][j] << "  |";
+			}
+			
+			
+		}
+		cout << endl;
+	}
+
+	
+
+
+
+
 }
 
 
@@ -571,6 +735,7 @@ void createNodes(grid& nowa, GlobalData& globe, int nodesNumber, ifstream& odczy
 
 void displayNodes(grid &newGrid,int nodesNumber) {
 	cout << "\nWyswietlenie wezlow: " << endl;
+	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
 	for (int i = 0; i < nodesNumber; i++)
 	{
 		if (newGrid.ND[i].x > 0 && newGrid.ND[i].x < 0.1) {
@@ -620,6 +785,7 @@ void createElements(grid &newGrid, int elementsNumber, ifstream &odczyt) {
 
 void displayElements(grid &newGrid, int elementsNumber) {
 	cout << "\nWyswietlenie elementow: " << endl;
+	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
 	for (int i = 0; i < elementsNumber; i++)
 	{
 		cout << i + 1 << ".   ";
@@ -760,26 +926,31 @@ int main()
 
 	//lab2
 	cout << endl;
-	cout << "\LABORATORIUM NR 2" << endl;
-	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
+	/*cout << "\LABORATORIUM NR 2" << endl;
+	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;*/
 	kwadratury kwadratura;
-	cout << "2punkty 1D wynik: " << integrationLab2(kwadratura, 2, 1) << endl;
+	/*cout << "2punkty 1D wynik: " << integrationLab2(kwadratura, 2, 1) << endl;
 	cout << "3punkty 1D wynik: " << integrationLab2(kwadratura, 3, 1) << endl;
 	cout << "2punkty 2D wynik: " << integrationLab2(kwadratura, 2, 2) << endl;
-	cout << "3punkty 2D wynik: " << integrationLab2(kwadratura, 3, 2) << endl;
+	cout << "3punkty 2D wynik: " << integrationLab2(kwadratura, 3, 2) << endl;*/
 
 	//lab3
-	cout << "\nLABORATORIUM NR 3" << endl;
+	/*cout << "\nLABORATORIUM NR 3" << endl;
 	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
 	double integral2p = integrationLab3(2, -3, 6.5, kwadratura);
-	double integral3p = integrationLab3(3, -3, 6.5, kwadratura);
+	double integral3p = integrationLab3(3, -3, 6.5, kwadratura);*/
 
 	//lab4
 	cout << "\nLABORATORIUM NR 4" << endl;
 	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
-	Elem4 elem(2);
+	Elem4 elem(4);
 	elem4(kwadratura, elem);
-	JacobiMatrix(elem, newGrid, kwadratura);
+	//JacobiMatrix(elem, newGrid, kwadratura, 0);
+
+	double*** HforAllElementss;
+	HforAllElementss = HforAllElements(elem, newGrid, kwadratura, global);
+	HGlobal(HforAllElementss, newGrid);
+	
 
 
 
