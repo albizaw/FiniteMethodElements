@@ -42,14 +42,24 @@ struct GlobalData {
 
 //lab2
 struct kwadratury {
-	double PC2p[2] = { -1/sqrt(3),1/sqrt(3)};
+	/*double PC2p[2] = { -1/sqrt(3),1/sqrt(3)};
 	double W2p[2] = { 1,1 };
 
 	double PC3p[3] = { -sqrt(0.6),0,sqrt(0.6)};
 	double W3p[3] = { 5/9.,8/9.,5/9. };
 
 	double PC4p[4] = { -0.861136, -0.339981, 0.339981, 0.861136 };
-	double W4p[4] = { 0.347855, 0.652145, 0.652145, 0.347855 };
+	double W4p[4] = { 0.347855, 0.652145, 0.652145, 0.347855 };*/
+
+	double PC2p[2] = {-sqrt(1/3.), sqrt(1/3.)};
+	double W2p[2] = { 1,1 };
+
+	double PC3p[3] = { -sqrt(3/5.),0,sqrt(3/5.) };
+	double W3p[3] = { 5 / 9.,8 / 9.,5 / 9. };
+
+	double PC4p[4] = { -(sqrt((3/7.)+((2/7.)*(sqrt(6/5.))))),-(sqrt((3 / 7.) - ((2 / 7.) * (sqrt(6 / 5.))))), (sqrt((3 / 7.) - ((2 / 7.) * (sqrt(6 / 5.))))), (sqrt((3 / 7.) + ((2 / 7.) * (sqrt(6 / 5.))))) };
+	double W4p[4] = { (18-sqrt(30))/36., (18 + sqrt(30)) / 36., (18 + sqrt(30)) / 36., (18 - sqrt(30)) / 36. };
+
 
 };
 
@@ -370,10 +380,10 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 	for (int i = 0; i < 4; i++)
 	{
 		int k = newGrid.EL[nrEl].ID[i];
-		//cout << k << endl;
+		
 		x.push_back(newGrid.ND[k-1].x);
 		y.push_back(newGrid.ND[k - 1].y);
-		//cout << x[i] << " " << y[i] << endl;
+		
 	}
 	
 	
@@ -398,6 +408,7 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 			
 		}
 
+
 		double*** Hpci;
 		double*** Hnx;
 		double*** Hny;
@@ -420,6 +431,8 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 			}
 		}
 
+
+		
 	
 		int counter;
 		double eta;
@@ -454,29 +467,29 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		
 
 		//double JacobiMat[2][2];
-		double sumxksi = 0;
-		double sumyksi = 0;
-		double sumxeta = 0;
-		double sumyeta = 0;
+		double sumxksi = 0.0;
+		double sumyksi = 0.0;
+		double sumxeta = 0.0;
+		double sumyeta = 0.0;
 
 		for (int j = 0; j < 4; j++)
 		{
-			sumxksi += elem.tabKsi[i][j] * x[j];
-			sumyksi += elem.tabKsi[i][j] * y[j];
-			sumxeta += elem.tabEta[i][j] * x[j];
-			sumyeta += elem.tabEta[i][j] * y[j];
+			sumxksi += elem.tabKsi[i][j] * x[j] / 1.0;
+			sumyksi += elem.tabKsi[i][j] * y[j] / 1.0;
+			sumxeta += elem.tabEta[i][j] * x[j] / 1.0;
+			sumyeta += elem.tabEta[i][j] * y[j] / 1.0;
 
 		}
 
 		//cout << "[" << sumxksi << " " << sumyksi << " " << sumxeta << " " << sumyeta << "]" << endl;
 
-		allJacobis[i][0] = sumxksi;
-		allJacobis[i][1] = sumyksi;
-		allJacobis[i][2] = sumxeta;
-		allJacobis[i][3] = sumyeta;
+		allJacobis[i][0] = sumxksi / 1.0;
+		allJacobis[i][1] = sumyksi / 1.0;
+		allJacobis[i][2] = sumxeta / 1.0;
+		allJacobis[i][3] = sumyeta / 1.0;
 
 		//1) dNi / dx
-		double detJ = allJacobis[i][0] * allJacobis[i][3] - allJacobis[i][1] * allJacobis[i][4];
+		double detJ = (allJacobis[i][0] * allJacobis[i][3] - allJacobis[i][1] * allJacobis[i][4]) / 1.0;
 
 		//odwrócenie macierzy
 		double pom;
@@ -489,7 +502,7 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		//cout << "DetJ:" << detJ << endl;
 
 		//wyznacznik 1/det
-		double reverseDetJ = 1. / detJ;
+		double reverseDetJ = 1.0 / (detJ);
 		//cout << reverseDetJ;
 		for (int k = 0; k < 4; k++)
 		{
@@ -591,7 +604,7 @@ double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, Gl
 		}
 	}
 
-	for (int i = 0; i < 9; i++)
+	for (int i = 0; i < newGrid.nE; i++)
 	{
 
 		HforAll[i] = JacobiMatrix(elem, newGrid, kwadratura, i, globe);
@@ -640,7 +653,7 @@ void HGlobal(double ***HforAllElements, grid& newGrid) {
 	
 	
 
-	for (int el = 0; el < 9; el++)
+	for (int el = 0; el < newGrid.nE; el++)
 	{
 
 		vector <int> ID;
@@ -676,32 +689,16 @@ void HGlobal(double ***HforAllElements, grid& newGrid) {
 
 	for (int i = 0; i < countOfNodes; i++)
 	{
+		//cout << i << "[] ";
 		for (int j = 0; j < countOfNodes; j++)
 		{
-
-			if (HGlobal[i][j] == 0)
-			{
-				cout  <<HGlobal[i][j] << "        |";
-			}
-			else if (HGlobal[i][j] < 0 && HGlobal[i][j]>-10)
-			{
-				cout << HGlobal[i][j] << " |";
-			}
-			else
-			{
 				cout << HGlobal[i][j] << "  |";
-			}
-			
 			
 		}
 		cout << endl;
 	}
 
 	
-
-
-
-
 }
 
 
@@ -946,14 +943,10 @@ int main()
 	Elem4 elem(4);
 	elem4(kwadratura, elem);
 	//JacobiMatrix(elem, newGrid, kwadratura, 0);
-
 	double*** HforAllElementss;
 	HforAllElementss = HforAllElements(elem, newGrid, kwadratura, global);
 	HGlobal(HforAllElementss, newGrid);
 	
-
-
-
 
 
 }
