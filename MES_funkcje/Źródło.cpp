@@ -61,6 +61,7 @@ struct kwadratury {
 	double W4p[4] = { (18-sqrt(30))/36., (18 + sqrt(30)) / 36., (18 + sqrt(30)) / 36., (18 - sqrt(30)) / 36. };
 
 
+	
 };
 
 
@@ -227,25 +228,67 @@ double N4eta(double ksi)
 	return (0.25 * (1 - ksi));
 }
 
+double N1ksieta(double ksi, double eta)
+{
+	return (0.25 * (1 - ksi)*(1-eta));
+}
+
+double N2ksieta(double ksi, double eta)
+{
+	return (0.25 * (1 + ksi) * (1 - eta));
+}
+
+double N3ksieta(double ksi, double eta)
+{
+	return (0.25 * (1 + ksi) * (1 + eta));
+}
+
+double N4ksieta(double ksi, double eta)
+{
+	return (0.25 * (1 - ksi) * (1 + eta));
+}
+
+
+
+
 
 //przekazujemy flagê, która tworzy odpowiedni wymiar tablicy
 struct Elem4 {
 	int numberOfPoints;
+	int punktyNaPowierzchni;
 
 	double** tabKsi;
 	double** tabEta;
+
+	double** tabNPowierzchnia;
+
 	
-	Elem4(int numberOfPoints) : numberOfPoints(numberOfPoints) {
+	Elem4(int numberOfPoints, int punktyNaPowierzchni) : numberOfPoints(numberOfPoints),punktyNaPowierzchni(punktyNaPowierzchni)
+	{
+		
 		int k = numberOfPoints * numberOfPoints;
 		tabKsi = new double* [k];
 		tabEta = new double* [k];
+		tabNPowierzchnia = new double* [punktyNaPowierzchni * 4]; //bo 4 œciany
 		for (int i = 0; i < k; i++)
 		{
 			tabKsi[i] = new double[4];
 			tabEta[i] = new double[4];
 		}
+
+		for (int i = 0; i < punktyNaPowierzchni * 4; i++)
+		{
+			tabNPowierzchnia[i] = new double[4];
+		}
 	}
 	
+};
+
+struct bok {
+	int numberOfPointsOverTheSurface;
+	double* wspolrzedne = new double[numberOfPointsOverTheSurface];
+	double funkcjeKsztaltu[4];
+
 };
 
 void elem4(kwadratury& kwadratury, Elem4& elem) {
@@ -366,6 +409,295 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 		}
 	}
 
+
+	
+	if (elem.punktyNaPowierzchni == 2)
+	{
+		//dolnasciana
+		ksi = kwadratury.PC2p[0];
+			elem.tabNPowierzchnia[0][0] = N1ksieta(ksi,-1);
+			elem.tabNPowierzchnia[0][1] = N2ksieta(ksi, -1);
+			elem.tabNPowierzchnia[0][2] = N3ksieta(ksi, -1);
+			elem.tabNPowierzchnia[0][3] = N4ksieta(ksi, -1);
+
+			ksi = kwadratury.PC2p[1];
+			elem.tabNPowierzchnia[1][0] = N1ksieta(ksi, -1);
+			elem.tabNPowierzchnia[1][1]= N2ksieta(ksi, -1);
+			elem.tabNPowierzchnia[1][2] = N3ksieta(ksi, -1);
+			elem.tabNPowierzchnia[1][3] = N4ksieta(ksi, -1);
+
+			//prawa sciana
+			ksi = kwadratury.PC2p[0];
+			elem.tabNPowierzchnia[2][0] = N1ksieta(1, ksi);
+			elem.tabNPowierzchnia[2][1] = N2ksieta(1, ksi);
+			elem.tabNPowierzchnia[2][2] = N3ksieta(1, ksi);
+			elem.tabNPowierzchnia[2][3] = N4ksieta(1, ksi);
+
+			ksi = kwadratury.PC2p[1];
+			elem.tabNPowierzchnia[3][0] = N1ksieta(1, ksi);
+			elem.tabNPowierzchnia[3][1] = N2ksieta(1, ksi);
+			elem.tabNPowierzchnia[3][2] = N3ksieta(1, ksi);
+			elem.tabNPowierzchnia[3][3] = N4ksieta(1, ksi);
+
+			//gorna sciana
+			ksi = kwadratury.PC2p[0];
+			elem.tabNPowierzchnia[4][0] = N1ksieta(ksi,1);
+			elem.tabNPowierzchnia[4][1] = N2ksieta(ksi,1);
+			elem.tabNPowierzchnia[4][2] = N3ksieta(ksi,1);
+			elem.tabNPowierzchnia[4][3] = N4ksieta(ksi,1);
+
+			ksi = kwadratury.PC2p[1];
+			elem.tabNPowierzchnia[5][0] = N1ksieta(ksi, 1);
+			elem.tabNPowierzchnia[5][1] = N2ksieta(ksi, 1);
+			elem.tabNPowierzchnia[5][2] = N3ksieta(ksi, 1);
+			elem.tabNPowierzchnia[5][3] = N4ksieta(ksi, 1);
+
+			//lewa
+			ksi = kwadratury.PC2p[0];
+			elem.tabNPowierzchnia[6][0] = N1ksieta(-1, ksi);
+			elem.tabNPowierzchnia[6][1] = N2ksieta(-1, ksi);
+			elem.tabNPowierzchnia[6][2] = N3ksieta(-1, ksi);
+			elem.tabNPowierzchnia[6][3] = N4ksieta(-1, ksi);
+
+			ksi = kwadratury.PC2p[1];
+			elem.tabNPowierzchnia[7][0] = N1ksieta(-1, ksi);
+			elem.tabNPowierzchnia[7][1] = N2ksieta(-1, ksi);
+			elem.tabNPowierzchnia[7][2] = N3ksieta(-1, ksi);
+			elem.tabNPowierzchnia[7][3] = N4ksieta(-1, ksi);
+			
+			for (int i = 0; i < elem.punktyNaPowierzchni*4; i++)
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					cout << elem.tabNPowierzchnia[i][j] << " | ";
+				}
+				cout << endl;
+			}
+
+			cout << endl;
+		
+	}
+
+	if (elem.punktyNaPowierzchni == 3)
+	{
+		//dolna sciana elementu
+		//1p
+		ksi = kwadratury.PC3p[0];
+		elem.tabNPowierzchnia[0][0] = N1ksieta(ksi, -1);
+		elem.tabNPowierzchnia[0][1] = N2ksieta(ksi, -1);
+		elem.tabNPowierzchnia[0][2] = N3ksieta(ksi, -1);
+		elem.tabNPowierzchnia[0][3] = N4ksieta(ksi, -1);
+		//2p
+		ksi = kwadratury.PC3p[1];
+		elem.tabNPowierzchnia[1][0] = N1ksieta(ksi, -1);
+		elem.tabNPowierzchnia[1][1] = N2ksieta(ksi, -1);
+		elem.tabNPowierzchnia[1][2] = N3ksieta(ksi, -1);
+		elem.tabNPowierzchnia[1][3] = N4ksieta(ksi, -1);
+		//3p
+		ksi = kwadratury.PC3p[2];
+		elem.tabNPowierzchnia[2][0] = N1ksieta(ksi, -1);
+		elem.tabNPowierzchnia[2][1] = N2ksieta(ksi, -1);
+		elem.tabNPowierzchnia[2][2] = N3ksieta(ksi, -1);
+		elem.tabNPowierzchnia[2][3] = N4ksieta(ksi, -1);
+
+		//prawa sciana elementu
+		//1p
+		ksi = kwadratury.PC3p[0];
+		elem.tabNPowierzchnia[3][0] = N1ksieta(1, ksi);
+		elem.tabNPowierzchnia[3][1] = N2ksieta(1, ksi);
+		elem.tabNPowierzchnia[3][2] = N3ksieta(1, ksi);
+		elem.tabNPowierzchnia[3][3] = N4ksieta(1, ksi);
+		//2p
+		ksi = kwadratury.PC3p[1];
+		elem.tabNPowierzchnia[4][0] = N1ksieta(1, ksi);
+		elem.tabNPowierzchnia[4][1] = N2ksieta(1, ksi);
+		elem.tabNPowierzchnia[4][2] = N3ksieta(1, ksi);
+		elem.tabNPowierzchnia[4][3] = N4ksieta(1, ksi);
+		//3p
+		ksi = kwadratury.PC3p[2];
+		elem.tabNPowierzchnia[5][0] = N1ksieta(1, ksi);
+		elem.tabNPowierzchnia[5][1] = N2ksieta(1, ksi);
+		elem.tabNPowierzchnia[5][2] = N3ksieta(1, ksi);
+		elem.tabNPowierzchnia[5][3] = N4ksieta(1, ksi);
+
+		//gorna sciana elementu
+		//1p
+		ksi = kwadratury.PC3p[0];
+		elem.tabNPowierzchnia[6][0] = N1ksieta(ksi, 1);
+		elem.tabNPowierzchnia[6][1] = N2ksieta(ksi, 1);
+		elem.tabNPowierzchnia[6][2] = N3ksieta(ksi, 1);
+		elem.tabNPowierzchnia[6][3] = N4ksieta(ksi, 1);
+		//2p
+		ksi = kwadratury.PC3p[1];
+		elem.tabNPowierzchnia[7][0] = N1ksieta(ksi, 1);
+		elem.tabNPowierzchnia[7][1] = N2ksieta(ksi, 1);
+		elem.tabNPowierzchnia[7][2] = N3ksieta(ksi, 1);
+		elem.tabNPowierzchnia[7][3] = N4ksieta(ksi, 1);
+		//3p
+		ksi = kwadratury.PC3p[2];
+		elem.tabNPowierzchnia[8][0] = N1ksieta(ksi, 1);
+		elem.tabNPowierzchnia[8][1] = N2ksieta(ksi, 1);
+		elem.tabNPowierzchnia[8][2] = N3ksieta(ksi, 1);
+		elem.tabNPowierzchnia[8][3] = N4ksieta(ksi, 1);
+
+		//lewa sciana elementu
+		//1p
+		ksi = kwadratury.PC3p[0];
+		elem.tabNPowierzchnia[9][0] = N1ksieta(-1, ksi);
+		elem.tabNPowierzchnia[9][1] = N2ksieta(-1, ksi);
+		elem.tabNPowierzchnia[9][2] = N3ksieta(-1, ksi);
+		elem.tabNPowierzchnia[9][3] = N4ksieta(-1, ksi);
+		//2p
+		ksi = kwadratury.PC3p[1];
+		elem.tabNPowierzchnia[10][0] = N1ksieta(-1, ksi);
+		elem.tabNPowierzchnia[10][1] = N2ksieta(-1, ksi);
+		elem.tabNPowierzchnia[10][2] = N3ksieta(-1, ksi);
+		elem.tabNPowierzchnia[10][3] = N4ksieta(-1, ksi);
+		//3p
+		ksi = kwadratury.PC3p[2];
+		elem.tabNPowierzchnia[11][0] = N1ksieta(-1, ksi);
+		elem.tabNPowierzchnia[11][1] = N2ksieta(-1, ksi);
+		elem.tabNPowierzchnia[11][2] = N3ksieta(-1, ksi);
+		elem.tabNPowierzchnia[11][3] = N4ksieta(-1, ksi);
+
+
+		for (int i = 0; i < elem.punktyNaPowierzchni * 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				cout << elem.tabNPowierzchnia[i][j] << " | ";
+			}
+			cout << endl;
+		}
+
+		cout << endl;
+
+	}
+
+	if (elem.punktyNaPowierzchni == 4)
+	{
+		//dolna sciana elementu
+		//1p
+		ksi = kwadratury.PC4p[0];
+		elem.tabNPowierzchnia[0][0] = N1ksieta(ksi, -1);
+		elem.tabNPowierzchnia[0][1] = N2ksieta(ksi, -1);
+		elem.tabNPowierzchnia[0][2] = N3ksieta(ksi, -1);
+		elem.tabNPowierzchnia[0][3] = N4ksieta(ksi, -1);
+		//2p
+		ksi = kwadratury.PC4p[1];
+		elem.tabNPowierzchnia[1][0] = N1ksieta(ksi, -1);
+		elem.tabNPowierzchnia[1][1] = N2ksieta(ksi, -1);
+		elem.tabNPowierzchnia[1][2] = N3ksieta(ksi, -1);
+		elem.tabNPowierzchnia[1][3] = N4ksieta(ksi, -1);
+		//3p
+		ksi = kwadratury.PC4p[2];
+		elem.tabNPowierzchnia[2][0] = N1ksieta(ksi, -1);
+		elem.tabNPowierzchnia[2][1] = N2ksieta(ksi, -1);
+		elem.tabNPowierzchnia[2][2] = N3ksieta(ksi, -1);
+		elem.tabNPowierzchnia[2][3] = N4ksieta(ksi, -1);
+
+		//4p
+		ksi = kwadratury.PC4p[3];
+		elem.tabNPowierzchnia[3][0] = N1ksieta(ksi, -1);
+		elem.tabNPowierzchnia[3][1] = N2ksieta(ksi, -1);
+		elem.tabNPowierzchnia[3][2] = N3ksieta(ksi, -1);
+		elem.tabNPowierzchnia[3][3] = N4ksieta(ksi, -1);
+
+		//prawa sciana elementu
+		//1p
+		ksi = kwadratury.PC4p[0];
+		elem.tabNPowierzchnia[4][0] = N1ksieta(1, ksi);
+		elem.tabNPowierzchnia[4][1] = N2ksieta(1, ksi);
+		elem.tabNPowierzchnia[4][2] = N3ksieta(1, ksi);
+		elem.tabNPowierzchnia[4][3] = N4ksieta(1, ksi);
+		//2p
+		ksi = kwadratury.PC4p[1];
+		elem.tabNPowierzchnia[5][0] = N1ksieta(1, ksi);
+		elem.tabNPowierzchnia[5][1] = N2ksieta(1, ksi);
+		elem.tabNPowierzchnia[5][2] = N3ksieta(1, ksi);
+		elem.tabNPowierzchnia[5][3] = N4ksieta(1, ksi);
+		//3p
+		ksi = kwadratury.PC4p[2];
+		elem.tabNPowierzchnia[6][0] = N1ksieta(1, ksi);
+		elem.tabNPowierzchnia[6][1] = N2ksieta(1, ksi);
+		elem.tabNPowierzchnia[6][2] = N3ksieta(1, ksi);
+		elem.tabNPowierzchnia[6][3] = N4ksieta(1, ksi);
+		//4p
+		ksi = kwadratury.PC4p[3];
+		elem.tabNPowierzchnia[7][0] = N1ksieta(1, ksi);
+		elem.tabNPowierzchnia[7][1] = N2ksieta(1, ksi);
+		elem.tabNPowierzchnia[7][2] = N3ksieta(1, ksi);
+		elem.tabNPowierzchnia[7][3] = N4ksieta(1, ksi);
+
+		//gorna sciana elementu
+		//1p
+		ksi = kwadratury.PC4p[0];
+		elem.tabNPowierzchnia[8][0] = N1ksieta(ksi, 1);
+		elem.tabNPowierzchnia[8][1] = N2ksieta(ksi, 1);
+		elem.tabNPowierzchnia[8][2] = N3ksieta(ksi, 1);
+		elem.tabNPowierzchnia[8][3] = N4ksieta(ksi, 1);
+		//2p
+		ksi = kwadratury.PC4p[1];
+		elem.tabNPowierzchnia[9][0] = N1ksieta(ksi, 1);
+		elem.tabNPowierzchnia[9][1] = N2ksieta(ksi, 1);
+		elem.tabNPowierzchnia[9][2] = N3ksieta(ksi, 1);
+		elem.tabNPowierzchnia[9][3] = N4ksieta(ksi, 1);
+		//3p
+		ksi = kwadratury.PC4p[2];
+		elem.tabNPowierzchnia[10][0] = N1ksieta(ksi, 1);
+		elem.tabNPowierzchnia[10][1] = N2ksieta(ksi, 1);
+		elem.tabNPowierzchnia[10][2] = N3ksieta(ksi, 1);
+		elem.tabNPowierzchnia[10][3] = N4ksieta(ksi, 1);
+		//4p
+		ksi = kwadratury.PC4p[3];
+		elem.tabNPowierzchnia[11][0] = N1ksieta(ksi, 1);
+		elem.tabNPowierzchnia[11][1] = N2ksieta(ksi, 1);
+		elem.tabNPowierzchnia[11][2] = N3ksieta(ksi, 1);
+		elem.tabNPowierzchnia[11][3] = N4ksieta(ksi, 1);
+
+		//lewa sciana elementu
+		//1p
+		ksi = kwadratury.PC4p[0];
+		elem.tabNPowierzchnia[12][0] = N1ksieta(-1, ksi);
+		elem.tabNPowierzchnia[12][1] = N2ksieta(-1, ksi);
+		elem.tabNPowierzchnia[12][2] = N3ksieta(-1, ksi);
+		elem.tabNPowierzchnia[12][3] = N4ksieta(-1, ksi);
+		//2p
+		ksi = kwadratury.PC4p[1];
+		elem.tabNPowierzchnia[13][0] = N1ksieta(-1, ksi);
+		elem.tabNPowierzchnia[13][1] = N2ksieta(-1, ksi);
+		elem.tabNPowierzchnia[13][2] = N3ksieta(-1, ksi);
+		elem.tabNPowierzchnia[13][3] = N4ksieta(-1, ksi);
+		//3p
+		ksi = kwadratury.PC4p[2];
+		elem.tabNPowierzchnia[14][0] = N1ksieta(-1, ksi);
+		elem.tabNPowierzchnia[14][1] = N2ksieta(-1, ksi);
+		elem.tabNPowierzchnia[14][2] = N3ksieta(-1, ksi);
+		elem.tabNPowierzchnia[14][3] = N4ksieta(-1, ksi);
+
+		//4p
+		ksi = kwadratury.PC4p[3];
+		elem.tabNPowierzchnia[15][0] = N1ksieta(-1, ksi);
+		elem.tabNPowierzchnia[15][1] = N2ksieta(-1, ksi);
+		elem.tabNPowierzchnia[15][2] = N3ksieta(-1, ksi);
+		elem.tabNPowierzchnia[15][3] = N4ksieta(-1, ksi);
+
+
+		for (int i = 0; i < elem.punktyNaPowierzchni * 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				cout << elem.tabNPowierzchnia[i][j] << " | ";
+			}
+			cout << endl;
+		}
+
+		cout << endl;
+
+	}
+
+
+
 }
 
 double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _nrEl, GlobalData& globe)
@@ -375,6 +707,8 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 
 	//x = { 0,0.025,0.025,0 };
 	//y = { 0,0,0.025,0.025 };
+
+	vector <int> BC;
 	
 	int nrEl = _nrEl;
 	for (int i = 0; i < 4; i++)
@@ -385,7 +719,170 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		y.push_back(newGrid.ND[k - 1].y);
 		
 	}
+
+	int liczbaScianBC = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		int k = newGrid.EL[nrEl].ID[i];
+		BC.push_back(newGrid.ND[k - 1].BC);
+		cout << k << ":";
+		cout << BC[i] << " | ";
+
+		
+	}
+	cout << endl;
+
+	vector <int> ktoraSciana;
+	int cnt = 0;
+	for (int i = 0; i < 3; i++)
+	{
+		if (BC[i] == 1 && BC[i + 1] == 1)
+		{
+			liczbaScianBC++;
+			ktoraSciana.push_back(cnt);
+		}
+		cnt++;
+	}
 	
+	if (BC[3]==1 && BC[0]==1)
+	{
+		liczbaScianBC++;
+		ktoraSciana.push_back(cnt);
+	}
+
+	cout << "BC na scianie nr: ";
+	for (int i = 0; i < liczbaScianBC; i++)
+	{
+		cout << ktoraSciana[i] +1 << ", ";
+	}
+
+	//double Hb[8][4][4]{};
+	int liczba = elem.punktyNaPowierzchni;
+	int pkt = liczba * 4;
+
+
+	double*** Hbnew;
+	Hbnew = new double**[pkt];
+	for (size_t i = 0; i < pkt; i++)
+	{
+		Hbnew[i] = new double* [4];
+		for (size_t j = 0; j < 4; j++)
+		{
+			Hbnew[i][j]=new double[4];
+		}
+	}
+
+	cout << "Liczba scian z warunkiem: " << liczbaScianBC << endl;
+	//tutaj bede przekazywal do funkcji liczbe punktow na powierzchni
+	int counterWagi;
+	double waga;
+	double cond = 25;
+	for (int i = 0; i < pkt; i++) //liczba bokow
+	{
+
+		if (i % elem.punktyNaPowierzchni == 0)
+		{
+			counterWagi = 0;
+		}
+
+		if (elem.punktyNaPowierzchni == 2)
+		{
+			waga = kwadratura.W2p[counterWagi];
+		}
+		else if (elem.punktyNaPowierzchni == 3)
+		{
+			waga = kwadratura.W3p[counterWagi];
+		}
+		else if (elem.punktyNaPowierzchni == 4)
+		{
+			waga = kwadratura.W4p[counterWagi];
+		}
+
+		//cout << waga << " || ";
+
+		for (int j = 0; j <4;j++)
+		{
+			for (int k = 0; k < 4; k++)
+			{
+				//cout << elem.tabNPowierzchnia[i][j] << " " << elem.tabNPowierzchnia[i][k] << " | ";
+				double wyn = cond * elem.tabNPowierzchnia[i][j] * elem.tabNPowierzchnia[i][k];
+				
+				wyn = wyn * waga;
+				Hbnew[i][j][k] = wyn;
+
+			}
+
+		}
+		//cout << endl;
+		counterWagi++;
+		
+	}
+
+	//musimy utworzyæ tablice Hbc tylko na tych œcianach gdzie jest warunek brzegowy
+	//double Hbc[2][4][4];
+	double*** Hbc;
+	
+		Hbc = new double** [liczbaScianBC];
+		for (size_t i = 0; i < liczbaScianBC; i++)
+		{
+			Hbc[i] = new double* [4];
+			for (size_t j = 0; j < 4; j++)
+			{
+				Hbc[i][j] = new double[4];
+			}
+		}
+
+
+		//dodawanie do siebie na danym punktow na bokach
+		double detJBok;
+		for (int i = 0; i < liczbaScianBC; i++)
+		{
+
+			
+
+			if (ktoraSciana[i] + 1 == 4)
+			{
+				detJBok = sqrt((x[3] - x[0]) * (x[3] - x[0]) + (y[3] - y[0]) * (y[3] - y[0]));
+			}
+			else
+			{
+				detJBok = sqrt((x[ktoraSciana[i] + 1] - x[ktoraSciana[i]]) * (x[ktoraSciana[i] + 1] - x[ktoraSciana[i]]) + (y[ktoraSciana[i] + 1] - y[ktoraSciana[i]]) * (y[ktoraSciana[i] + 1] - y[ktoraSciana[i]]));
+			};
+
+			detJBok = detJBok / 2;
+			cout << "DetJbok = " << detJBok << endl;
+			cout << "Hbc el:[" << nrEl + 1 << "] sciana[" << ktoraSciana[i] + 1 << "]" << endl;
+			for (int j = 0; j < 4; j++)
+					{
+						for (int k = 0; k < 4; k++)
+						{
+							//Hbc[i][j][k] = (Hbnew[ktoraSciana[i]*2][j][k] + Hbnew[ktoraSciana[i]*2 + 1][j][k]) * 0.0125;
+							if (elem.punktyNaPowierzchni == 2)
+							{
+								Hbc[i][j][k] = (Hbnew[ktoraSciana[i] * 2][j][k] + Hbnew[ktoraSciana[i] * 2 + 1][j][k]) * detJBok;
+								cout << Hbc[i][j][k] << " ";
+							}
+							else if (elem.punktyNaPowierzchni == 3)
+							{
+								Hbc[i][j][k] = (Hbnew[ktoraSciana[i] * 3][j][k] + Hbnew[ktoraSciana[i] * 3 + 1][j][k] + Hbnew[ktoraSciana[i] * 3 + 2][j][k]) * detJBok;
+								cout << Hbc[i][j][k] << " ";
+							}
+							else if (elem.punktyNaPowierzchni == 4)
+							{
+								Hbc[i][j][k] = (Hbnew[ktoraSciana[i] * 4][j][k] + Hbnew[ktoraSciana[i] * 4 + 1][j][k] + Hbnew[ktoraSciana[i] * 4 + 2][j][k] + +Hbnew[ktoraSciana[i] * 4 + 3][j][k]) * detJBok;
+								cout << Hbc[i][j][k] << " ";
+							}
+							
+							
+						}
+						cout << endl;
+					}
+			cout << endl << endl;
+		}
+
+
+	
+		
 	
 	int k = elem.numberOfPoints;
 	int k2 = k * k;
@@ -394,6 +891,8 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 	double** Nidx;
 	double** Nidy;
 	double** H;
+
+
 ;
 		allJacobis = new double* [k2];
 		Nidx = new double* [k2];
@@ -412,10 +911,12 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		double*** Hpci;
 		double*** Hnx;
 		double*** Hny;
+		
 
 		Hnx = new double** [k2];
 		Hny = new double** [k2];
 		Hpci = new double** [k2];
+		
 
 		for (int j = 0; j < k2; j++)
 		{
@@ -431,8 +932,6 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 			}
 		}
 
-
-		
 	
 		int counter;
 		double eta;
@@ -582,7 +1081,31 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		}
 		//cout << endl;
 	}
+
+	if (liczbaScianBC > 0)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			suma = 0;
+			for (size_t j = 0; j < 4; j++)
+			{
+				suma = Hbc[0][i][j];
+
+				for (size_t k = 1; k < liczbaScianBC; k++)
+				{
+					suma += Hbc[k][i][j];
+				}
+				H[i][j] += suma;
+			}
+		}
+	}
 	
+	delete[] allJacobis;
+	delete[] Nidx;
+	delete[] Nidy;
+	delete[] Hpci;
+	delete[] Hnx;
+	delete[] Hny;
 
 	return H;
 }
@@ -604,6 +1127,7 @@ double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, Gl
 		}
 	}
 
+	//int i = 0; i < newGrid.nE; i++
 	for (int i = 0; i < newGrid.nE; i++)
 	{
 
@@ -611,7 +1135,8 @@ double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, Gl
 		
 	}
 
-	for (int i = 0; i < 9; i++)
+	//int i = 0; i < newGrid.nE; i++
+	for (int i = 0; i < newGrid.nE; i++)
 	{
 		cout << "Macierz lokalna H dla elementu nr [" << i + 1 << "]" << endl;
 		for (int j = 0; j < 4; j++)
@@ -628,6 +1153,7 @@ double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, Gl
 
 	return HforAll;
 
+	delete[] HforAll;
 	
 }
 
@@ -652,7 +1178,7 @@ void HGlobal(double ***HforAllElements, grid& newGrid) {
 
 	
 	
-
+	//int el = 0; el < newGrid.nE; el++
 	for (int el = 0; el < newGrid.nE; el++)
 	{
 
@@ -698,7 +1224,9 @@ void HGlobal(double ***HforAllElements, grid& newGrid) {
 		cout << endl;
 	}
 
-	
+	delete[] HGlobal;
+	delete[] HforAllElements;
+
 }
 
 
@@ -940,7 +1468,7 @@ int main()
 	//lab4
 	cout << "\nLABORATORIUM NR 4" << endl;
 	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
-	Elem4 elem(4);
+	Elem4 elem(2,2);
 	elem4(kwadratura, elem);
 	//JacobiMatrix(elem, newGrid, kwadratura, 0);
 	double*** HforAllElementss;
