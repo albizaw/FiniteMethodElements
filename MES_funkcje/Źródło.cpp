@@ -465,7 +465,7 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 			elem.tabNPowierzchnia[7][2] = N3ksieta(-1, ksi);
 			elem.tabNPowierzchnia[7][3] = N4ksieta(-1, ksi);
 			
-			for (int i = 0; i < elem.punktyNaPowierzchni*4; i++)
+			/*for (int i = 0; i < elem.punktyNaPowierzchni*4; i++)
 			{
 				for (int j = 0; j < 4; j++)
 				{
@@ -474,7 +474,7 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 				cout << endl;
 			}
 
-			cout << endl;
+			cout << endl;*/
 		
 	}
 
@@ -711,6 +711,7 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 	vector <int> BC;
 	
 	int nrEl = _nrEl;
+	
 	for (int i = 0; i < 4; i++)
 	{
 		int k = newGrid.EL[nrEl].ID[i];
@@ -725,12 +726,12 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 	{
 		int k = newGrid.EL[nrEl].ID[i];
 		BC.push_back(newGrid.ND[k - 1].BC);
-		cout << k << ":";
-		cout << BC[i] << " | ";
+		//cout << k << ":";
+		//cout << BC[i] << " | ";
 
 		
 	}
-	cout << endl;
+	//cout << endl;
 
 	vector <int> ktoraSciana;
 	int cnt = 0;
@@ -750,11 +751,12 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		ktoraSciana.push_back(cnt);
 	}
 
-	cout << "BC na scianie nr: ";
+	//BC na ktorej scianie
+	/*cout << "BC na scianie nr: ";
 	for (int i = 0; i < liczbaScianBC; i++)
 	{
 		cout << ktoraSciana[i] +1 << ", ";
-	}
+	}*/
 
 	//double Hb[8][4][4]{};
 	int liczba = elem.punktyNaPowierzchni;
@@ -772,11 +774,12 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		}
 	}
 
-	cout << "Liczba scian z warunkiem: " << liczbaScianBC << endl;
+	//cout << "Liczba scian z warunkiem: " << liczbaScianBC << endl;
 	//tutaj bede przekazywal do funkcji liczbe punktow na powierzchni
 	int counterWagi;
 	double waga;
-	double cond = 25;
+	double cond = globe.Alfa;
+	//double cond = 25;
 	for (int i = 0; i < pkt; i++) //liczba bokow
 	{
 
@@ -798,7 +801,6 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 			waga = kwadratura.W4p[counterWagi];
 		}
 
-		//cout << waga << " || ";
 
 		for (int j = 0; j <4;j++)
 		{
@@ -850,8 +852,8 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 			};
 
 			detJBok = detJBok / 2;
-			cout << "DetJbok = " << detJBok << endl;
-			cout << "Hbc el:[" << nrEl + 1 << "] sciana[" << ktoraSciana[i] + 1 << "]" << endl;
+			//cout << "DetJbok = " << detJBok << endl;
+			//cout << "Hbc el:[" << nrEl + 1 << "] sciana[" << ktoraSciana[i] + 1 << "]" << endl;
 			for (int j = 0; j < 4; j++)
 					{
 						for (int k = 0; k < 4; k++)
@@ -860,24 +862,24 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 							if (elem.punktyNaPowierzchni == 2)
 							{
 								Hbc[i][j][k] = (Hbnew[ktoraSciana[i] * 2][j][k] + Hbnew[ktoraSciana[i] * 2 + 1][j][k]) * detJBok;
-								cout << Hbc[i][j][k] << " ";
+								//cout << Hbc[i][j][k] << " ";
 							}
 							else if (elem.punktyNaPowierzchni == 3)
 							{
 								Hbc[i][j][k] = (Hbnew[ktoraSciana[i] * 3][j][k] + Hbnew[ktoraSciana[i] * 3 + 1][j][k] + Hbnew[ktoraSciana[i] * 3 + 2][j][k]) * detJBok;
-								cout << Hbc[i][j][k] << " ";
+								//cout << Hbc[i][j][k] << " ";
 							}
 							else if (elem.punktyNaPowierzchni == 4)
 							{
 								Hbc[i][j][k] = (Hbnew[ktoraSciana[i] * 4][j][k] + Hbnew[ktoraSciana[i] * 4 + 1][j][k] + Hbnew[ktoraSciana[i] * 4 + 2][j][k] + +Hbnew[ktoraSciana[i] * 4 + 3][j][k]) * detJBok;
-								cout << Hbc[i][j][k] << " ";
+								//cout << Hbc[i][j][k] << " ";
 							}
 							
 							
 						}
-						cout << endl;
+						//cout << endl;
 					}
-			cout << endl << endl;
+			//cout << endl << endl;
 		}
 
 
@@ -980,6 +982,9 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 
 		}
 
+		/*cout << "Jestem tutaj: Pkt nr: " <<i<< endl;
+		cout << sumxksi << " " << sumyksi << " " << sumxeta << " " << sumyeta << " " << endl;*/
+
 		//cout << "[" << sumxksi << " " << sumyksi << " " << sumxeta << " " << sumyeta << "]" << endl;
 
 		allJacobis[i][0] = sumxksi / 1.0;
@@ -987,22 +992,30 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		allJacobis[i][2] = sumxeta / 1.0;
 		allJacobis[i][3] = sumyeta / 1.0;
 
+		/*for (int j = 0; j < 4; j++)
+		{
+			cout << allJacobis[i][j] << " ";
+		}
+		cout << endl;*/
+
 		//1) dNi / dx
-		double detJ = (allJacobis[i][0] * allJacobis[i][3] - allJacobis[i][1] * allJacobis[i][4]) / 1.0;
+		double detJ = (allJacobis[i][0] * allJacobis[i][3] - allJacobis[i][1] * allJacobis[i][2]) / 1.0;
+		//cout << "DetJ : pkt nr:" << i << " === " << detJ << " | ";
 
 		//odwrócenie macierzy
 		double pom;
 		pom = allJacobis[i][0];
 		allJacobis[i][0] = allJacobis[i][3];
 		allJacobis[i][3] = pom;
-		allJacobis[i][1] = -allJacobis[i][1];
-		allJacobis[i][2] = -allJacobis[i][2];
+		allJacobis[i][1] = -1 *allJacobis[i][1];
+		allJacobis[i][2] = -1 * allJacobis[i][2];
 
 		//cout << "DetJ:" << detJ << endl;
 
 		//wyznacznik 1/det
 		double reverseDetJ = 1.0 / (detJ);
 		//cout << reverseDetJ;
+		//cout << "Array razy wyznacznik: " << endl;
 		for (int k = 0; k < 4; k++)
 		{
 			allJacobis[i][k] *= reverseDetJ;
@@ -1025,8 +1038,9 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		//macierzH dla punktów ca³kowania
 
 
-		//double kt = 25;
+		//double kt = 300;
 		double kt = globe.Conductivity;
+		//kt = 25;
 
 		//cout << "Ksi: " << ksi << endl;
 		//cout << "Eta: " << eta << endl;
@@ -1082,6 +1096,7 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 		//cout << endl;
 	}
 
+	// bez Hbc
 	if (liczbaScianBC > 0)
 	{
 		for (int i = 0; i < 4; i++)
@@ -1109,6 +1124,8 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 
 	return H;
 }
+
+
 
 double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, GlobalData& globe)
 {
@@ -1157,7 +1174,259 @@ double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, Gl
 	
 }
 
-void HGlobal(double ***HforAllElements, grid& newGrid) {
+double *PforElement(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _nrEl, GlobalData& globe)
+{
+	vector <double> x;
+	vector <double> y;
+
+	//x = { 0,0.025,0.025,0 };
+	//y = { 0,0,0.025,0.025 };
+
+	vector <int> BC;
+
+	int nrEl = _nrEl;
+	for (int i = 0; i < 4; i++)
+	{
+		int k = newGrid.EL[nrEl].ID[i];
+
+		x.push_back(newGrid.ND[k - 1].x);
+		y.push_back(newGrid.ND[k - 1].y);
+
+	}
+
+	int liczbaScianBC = 0;
+	for (int i = 0; i < 4; i++)
+	{
+		int k = newGrid.EL[nrEl].ID[i];
+		BC.push_back(newGrid.ND[k - 1].BC);
+		//cout << k << ":";
+		//cout << BC[i] << " | ";
+
+
+	}
+	//cout << endl;
+
+	vector <int> ktoraSciana;
+	int cnt = 0;
+	for (int i = 0; i < 3; i++)
+	{
+		if (BC[i] == 1 && BC[i + 1] == 1)
+		{
+			liczbaScianBC++;
+			ktoraSciana.push_back(cnt);
+		}
+		cnt++;
+	}
+
+	if (BC[3] == 1 && BC[0] == 1)
+	{
+		liczbaScianBC++;
+		ktoraSciana.push_back(cnt);
+	}
+
+	/*cout << "BC na scianie nr: ";
+	for (int i = 0; i < liczbaScianBC; i++)
+	{
+		cout << ktoraSciana[i] + 1 << ", ";
+	}*/
+
+	
+	int liczba = elem.punktyNaPowierzchni;
+	int pkt = liczba * 4;
+
+	double** Pnew;
+	Pnew = new double* [pkt];
+	for (size_t i = 0; i < pkt; i++)
+	{
+		Pnew[i] = new double[4];
+	}
+
+	//cout << "Liczba scian z warunkiem: " << liczbaScianBC << endl;
+	//tutaj bede przekazywal do funkcji liczbe punktow na powierzchni
+	int counterWagi;
+	double waga;
+	double cond = globe.Alfa;
+	double tempOt = globe.Tot;
+	for (int i = 0; i < pkt; i++) //liczba bokow
+	{
+
+		if (i % elem.punktyNaPowierzchni == 0)
+		{
+			counterWagi = 0;
+		}
+
+		if (elem.punktyNaPowierzchni == 2)
+		{
+			waga = kwadratura.W2p[counterWagi];
+		}
+		else if (elem.punktyNaPowierzchni == 3)
+		{
+			waga = kwadratura.W3p[counterWagi];
+		}
+		else if (elem.punktyNaPowierzchni == 4)
+		{
+			waga = kwadratura.W4p[counterWagi];
+		}
+
+		//cout << waga << " || ";
+		//wektor ma jeden wiersz
+
+		for (int k = 0; k < 4; k++)
+		{
+			//cout << elem.tabNPowierzchnia[i][j] << " " << elem.tabNPowierzchnia[i][k] << " | ";
+			//cout << "Mno¿e: " << elem.tabNPowierzchnia[i][k] << " * " << tempOt << " || " << endl;
+			double wyn = cond * elem.tabNPowierzchnia[i][k];
+
+			wyn = wyn * waga * tempOt;
+			Pnew[i][k] = wyn;
+			//cout << Pnew[i][k] << " | ";
+
+		}
+		//cout << endl << endl;
+
+		counterWagi++;
+
+	}
+
+	//musimy utworzyæ tablice Hbc tylko na tych œcianach gdzie jest warunek brzegowy
+	////double Hbc[2][4][4];
+	double** PileBC;
+	PileBC = new double* [liczbaScianBC];
+	for (size_t i = 0; i < liczbaScianBC; i++)
+	{
+		PileBC[i] = new double[4];
+	};
+
+
+	
+	//dodawanie do siebie wektorów na danym  na boku
+	double detJBok;
+	for (int i = 0; i < liczbaScianBC; i++)
+	{
+		if (ktoraSciana[i] + 1 == 4)
+		{
+			detJBok = sqrt((x[3] - x[0]) * (x[3] - x[0]) + (y[3] - y[0]) * (y[3] - y[0]));
+		}
+		else
+		{
+			detJBok = sqrt((x[ktoraSciana[i] + 1] - x[ktoraSciana[i]]) * (x[ktoraSciana[i] + 1] - x[ktoraSciana[i]]) + (y[ktoraSciana[i] + 1] - y[ktoraSciana[i]]) * (y[ktoraSciana[i] + 1] - y[ktoraSciana[i]]));
+		};
+
+		detJBok = detJBok / 2;
+		//cout << "DetJBok sciana[" << i + 1 << "] element[" << nrEl << "] = " << detJBok << endl;
+		//cout << "DetJbok = " << detJBok << endl;
+		//cout << "Hbc el:[" << nrEl + 1 << "] sciana[" << ktoraSciana[i] + 1 << "]" << endl;
+
+		for (int j = 0; j < 4; j++)
+		{
+			if (elem.punktyNaPowierzchni == 2)
+			{
+				PileBC[i][j] = (Pnew[ktoraSciana[i] * 2][j] + Pnew[ktoraSciana[i] * 2 + 1][j]) * detJBok;
+				//cout << PileBC[i][j] << " | ";
+			}
+			else if (elem.punktyNaPowierzchni == 3)
+			{
+				PileBC[i][j] = (Pnew[ktoraSciana[i] * 3][j] + Pnew[ktoraSciana[i] * 3 + 1][j] + Pnew[ktoraSciana[i] * 3 + 2][j]) * detJBok;
+				//cout << PileBC[i][j] << " | ";
+			}
+			else if (elem.punktyNaPowierzchni == 4)
+			{
+				PileBC[i][j] = (Pnew[ktoraSciana[i] * 4][j] + Pnew[ktoraSciana[i] * 4 + 1][j] + Pnew[ktoraSciana[i] * 4 + 2][j] + Pnew[ktoraSciana[i] * 4 + 3][j]) * detJBok;
+				//cout << PileBC[i][j] << " | ";
+			}
+			
+		}
+		//cout << endl;
+
+	}
+
+	//tablica zwracajaca P dla kazdego elementu
+	//double tabWholeElement[4];
+	double* tabWholeElement;
+	tabWholeElement = new double[4];
+	for (int i = 0; i < 4; i++)
+	{
+		tabWholeElement[i] = 0;
+	}
+
+	if (liczbaScianBC > 0)
+	{
+		for (int i = 0; i < liczbaScianBC; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				tabWholeElement[j] += PileBC[i][j];
+			}
+			
+		}
+	}
+	
+
+	for (int i = 0; i < 4; i++)
+	{
+		//cout << tabWholeElement[i] << " || ";
+	}
+
+
+	return tabWholeElement;
+}
+
+
+double** PforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, GlobalData& globe)
+{
+	double** PforAll;
+	//double *pom = PforElement(elem, newGrid, kwadratura, 0, globe);
+
+	int nE = newGrid.nE;
+	PforAll = new double* [nE];
+
+	for (int j = 0; j < nE; j++)
+	{
+		PforAll[j] = new double[4];
+	}
+
+	for (int i = 0; i < nE; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			PforAll[i][j] = 0.0;
+		}
+	}
+
+	//int i = 0; i < newGrid.nE; i++
+	for (int i = 0; i < newGrid.nE; i++)
+	{
+		PforAll[i] = PforElement(elem, newGrid, kwadratura, i, globe);
+		//PforAll[i] = PforElement(elem, newGrid, kwadratura, i, globe);
+	
+		//cout << "\nMacierz lokalna wektora P dla elementu nr [" << i + 1 << "]" << endl;
+		for (int j = 0; j < 4; j++)
+		{
+			
+			//cout << PforAll[i][j] << " | ";
+		}
+		//cout << endl;
+
+	}
+
+	/*cout << "P for All Elements: \n";
+	for (int i = 0; i < newGrid.nE; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			cout << PforAll[i][j] << " | ";
+		}
+		cout << endl;
+	}*/
+	
+
+	return PforAll;
+
+	delete[] PforAll;
+
+}
+
+double** HGlobal(double ***HforAllElements, grid& newGrid) {
 	int countOfNodes = newGrid.nN;
 
 	double** HGlobal;
@@ -1224,12 +1493,101 @@ void HGlobal(double ***HforAllElements, grid& newGrid) {
 		cout << endl;
 	}
 
+	return HGlobal;
+
 	delete[] HGlobal;
 	delete[] HforAllElements;
 
 }
 
+double* PGlobal(double **PforAllElements, grid& newGrid)
+{
 
+	int countOfNodes = newGrid.nN;
+
+	double *PGlobal;
+	PGlobal = new double [countOfNodes];
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		PGlobal[i] = 0;
+	}
+
+
+
+	//int el = 0; el < newGrid.nE; el++
+	for (int el = 0; el < newGrid.nE; el++)
+	{
+
+		vector <int> ID;
+
+		//dla kazdego elementu wczytujemy ID
+		for (int i = 0; i < 4; i++)
+		{
+			int k = newGrid.EL[el].ID[i];
+			//cout << k << " | ";
+			ID.push_back(k);
+			//cout << k << " | ";
+		}
+
+		//cout << endl;
+
+
+		for (int j = 0; j < 4; j++)
+		{
+			PGlobal[ID[j]-1] += PforAllElements[el][j];
+			
+		}
+		
+		
+
+	}
+
+
+	cout << "\nMacierz globalna wektora P: " << endl;
+	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl;
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		
+			cout << PGlobal[i] << "  |";
+
+		
+		
+	}
+
+	cout << endl;
+
+	return PGlobal;
+}
+
+void tVector(double** HGlobalArray, double* PGlobalArray)
+{
+	double* tVect;
+	tVect = new double[16];
+
+	for (int k = 0; k < 16; k++)
+	{
+		tVect[k] = 0;
+	}
+
+	for (int i = 0; i < 16; i++)
+	{
+		for (int k = 0; k < 16; k++)
+		{
+			tVect[i] += HGlobalArray[i][k] * PGlobalArray[k];
+		}
+	}
+
+	cout << "Wektor {t} wynosi: \n";
+
+	for (int i = 0; i < 16; i++)
+	{
+		cout << tVect[i] << " | ";
+	}
+	cout << endl;
+
+}
 
 
 
@@ -1473,8 +1831,13 @@ int main()
 	//JacobiMatrix(elem, newGrid, kwadratura, 0);
 	double*** HforAllElementss;
 	HforAllElementss = HforAllElements(elem, newGrid, kwadratura, global);
-	HGlobal(HforAllElementss, newGrid);
-	
+	double** HGlobalArray = HGlobal(HforAllElementss, newGrid);
+	//PforElement(elem, newGrid, kwadratura,0, global);
+	double** PforAllElementss;
+	PforAllElementss = PforAllElements(elem, newGrid, kwadratura, global);
+	double* PGlobalArrray = PGlobal(PforAllElementss, newGrid);
+
+	//tVector(HGlobalArray, PGlobalArrray);
 
 
 }
