@@ -39,7 +39,6 @@ struct GlobalData {
 	int Density;
 	int SpecificHeat;
 };
-
 //lab2
 struct kwadratury {
 	/*double PC2p[2] = { -1/sqrt(3),1/sqrt(3)};
@@ -63,8 +62,6 @@ struct kwadratury {
 
 	
 };
-
-
 
 double function1d(double x) {
 	return (2*x*x+3*x-8);
@@ -131,7 +128,6 @@ double integrationLab2(kwadratury &kwadratura,int version,int system) {
 };
 
 //lab3
-
 double N1(double ksi) {
 	double N1 = (1 - ksi) / (2);
 	return N1;
@@ -145,7 +141,6 @@ double N2(double ksi) {
 double fun(double x) {
 	return (3*x*x - 6*x + 1);
 }
-
 
 double integrationLab3(int version,double x1, double x2, kwadratury &kwadratura) {
 	double Pcx1, Pcx2, Pcx3, detJ, integral;
@@ -247,9 +242,6 @@ double N4ksieta(double ksi, double eta)
 {
 	return (0.25 * (1 - ksi) * (1 + eta));
 }
-
-
-
 
 
 //przekazujemy flagê, która tworzy odpowiedni wymiar tablicy
@@ -782,7 +774,7 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 	//double cond = 25;
 	for (int i = 0; i < pkt; i++) //liczba bokow
 	{
-
+		
 		if (i % elem.punktyNaPowierzchni == 0)
 		{
 			counterWagi = 0;
@@ -801,6 +793,7 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 			waga = kwadratura.W4p[counterWagi];
 		}
 
+		//cout << "Waga " << waga << endl;
 
 		for (int j = 0; j <4;j++)
 		{
@@ -1125,8 +1118,6 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 	return H;
 }
 
-
-
 double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, GlobalData& globe)
 {
 	double*** HforAll;
@@ -1371,7 +1362,6 @@ double *PforElement(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _nrE
 	return tabWholeElement;
 }
 
-
 double** PforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, GlobalData& globe)
 {
 	double** PforAll;
@@ -1561,36 +1551,50 @@ double* PGlobal(double **PforAllElements, grid& newGrid)
 	return PGlobal;
 }
 
-void tVector(double** HGlobalArray, double* PGlobalArray)
+void tVector(double** HGlobalArray, double* PGlobalArray, grid& newGrid)
 {
-	double* tVect;
-	tVect = new double[16];
-
-	for (int k = 0; k < 16; k++)
+	int numberOfNodes = newGrid.nN;
+	vector<double> t(numberOfNodes);
+	
+	for (int i = 0; i < numberOfNodes; i++)
 	{
-		tVect[k] = 0;
-	}
+		double pivot = HGlobalArray[i][i];
 
-	for (int i = 0; i < 16; i++)
-	{
-		for (int k = 0; k < 16; k++)
+		for (int j = 0; j < numberOfNodes; j++)
 		{
-			tVect[i] += HGlobalArray[i][k] * PGlobalArray[k];
+			HGlobalArray[i][j] /= pivot;
+		}
+		PGlobalArray[i] /= pivot;
+
+		for (int k = 0; k < numberOfNodes; k++)
+		{
+			if (k != i)
+			{
+				double factor = HGlobalArray[k][i];
+				for (int j = 0; j < numberOfNodes; j++)
+				{
+					HGlobalArray[k][j] -= factor * HGlobalArray[i][j];
+				}
+				PGlobalArray[k] -= factor * PGlobalArray[i];
+			}
 		}
 	}
 
-	cout << "Wektor {t} wynosi: \n";
-
-	for (int i = 0; i < 16; i++)
+	for (int i = numberOfNodes -1; i >=0; i--)
 	{
-		cout << tVect[i] << " | ";
+		t[i] = PGlobalArray[i];
+		for (int j = i+1; j < numberOfNodes; j++)
+		{
+			t[i] -= HGlobalArray[i][j] * t[j];
+		}
 	}
-	cout << endl;
 
+	cout << "Wektor {t}" << endl;
+	for (int i = 0; i < numberOfNodes; i++)
+	{
+		cout << t[i] << " ";
+	}
 }
-
-
-
 
 //lab1
 void createNodes(grid& nowa, GlobalData& globe, int nodesNumber, ifstream& odczyt) {
@@ -1812,17 +1816,6 @@ int main()
 	/*cout << "\LABORATORIUM NR 2" << endl;
 	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;*/
 	kwadratury kwadratura;
-	/*cout << "2punkty 1D wynik: " << integrationLab2(kwadratura, 2, 1) << endl;
-	cout << "3punkty 1D wynik: " << integrationLab2(kwadratura, 3, 1) << endl;
-	cout << "2punkty 2D wynik: " << integrationLab2(kwadratura, 2, 2) << endl;
-	cout << "3punkty 2D wynik: " << integrationLab2(kwadratura, 3, 2) << endl;*/
-
-	//lab3
-	/*cout << "\nLABORATORIUM NR 3" << endl;
-	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
-	double integral2p = integrationLab3(2, -3, 6.5, kwadratura);
-	double integral3p = integrationLab3(3, -3, 6.5, kwadratura);*/
-
 	//lab4
 	cout << "\nLABORATORIUM NR 4" << endl;
 	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
@@ -1837,7 +1830,7 @@ int main()
 	PforAllElementss = PforAllElements(elem, newGrid, kwadratura, global);
 	double* PGlobalArrray = PGlobal(PforAllElementss, newGrid);
 
-	//tVector(HGlobalArray, PGlobalArrray);
+	tVector(HGlobalArray, PGlobalArrray, newGrid);
 
 
 }
