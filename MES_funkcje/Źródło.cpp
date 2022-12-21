@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <iomanip>
+#include <algorithm>
 
 using namespace std;
 
@@ -253,7 +254,7 @@ struct Elem4 {
 	double** tabEta;
 
 	double** tabNPowierzchnia;
-
+	double** tabFunkcjiKsztaltow;
 	
 	Elem4(int numberOfPoints, int punktyNaPowierzchni) : numberOfPoints(numberOfPoints),punktyNaPowierzchni(punktyNaPowierzchni)
 	{
@@ -261,11 +262,14 @@ struct Elem4 {
 		int k = numberOfPoints * numberOfPoints;
 		tabKsi = new double* [k];
 		tabEta = new double* [k];
+		tabFunkcjiKsztaltow = new double* [k];
+
 		tabNPowierzchnia = new double* [punktyNaPowierzchni * 4]; //bo 4 œciany
 		for (int i = 0; i < k; i++)
 		{
 			tabKsi[i] = new double[4];
 			tabEta[i] = new double[4];
+			tabFunkcjiKsztaltow[i] = new double[4];
 		}
 
 		for (int i = 0; i < punktyNaPowierzchni * 4; i++)
@@ -274,13 +278,6 @@ struct Elem4 {
 		}
 	}
 	
-};
-
-struct bok {
-	int numberOfPointsOverTheSurface;
-	double* wspolrzedne = new double[numberOfPointsOverTheSurface];
-	double funkcjeKsztaltu[4];
-
 };
 
 void elem4(kwadratury& kwadratury, Elem4& elem) {
@@ -304,14 +301,6 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 			ksi = kwadratury.PC2p[counter];
 			//cout << ksi << endl;
 
-			/*if (i < elem.numberOfPoints)
-			{
-				eta = kwadratury.PC2p[0];
-			}
-			else
-			{
-				eta = kwadratury.PC2p[1];
-			}*/
 			eta = kwadratury.PC2p[i / 2];
 
 
@@ -325,8 +314,13 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 			elem.tabEta[i][2] = N3eta(kwadratury.PC2p[counter]);
 			elem.tabEta[i][3] = N4eta(kwadratury.PC2p[counter]);
 
+			elem.tabFunkcjiKsztaltow[i][0] = N1ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][1] = N2ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][2] = N3ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][3] = N4ksieta(ksi, eta);
 
-			//cout << eta << " " << N1ksi(eta) << " " << N2ksi(eta) << " " << N3ksi(eta) << " " << N4ksi(eta) << endl;
+
+			cout  << N1ksieta(ksi,eta) << " " << N2ksieta(ksi,eta) << " " << N3ksieta(ksi,eta) << " " << N4ksieta(ksi,eta) << endl;
 			//cout << ksi << " " << N1eta(kwadratury.PC2p[counter]) << " " << N2eta(kwadratury.PC2p[counter]) << " " << N3eta(kwadratury.PC2p[counter]) << " " << N4eta(kwadratury.PC2p[counter]) << endl;
 
 			counter++;
@@ -357,6 +351,10 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 			elem.tabEta[i][2] = N3eta(ksi);
 			elem.tabEta[i][3] = N4eta(ksi);
 
+			elem.tabFunkcjiKsztaltow[i][0] = N1ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][1] = N2ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][2] = N3ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][3] = N4ksieta(ksi, eta);
 
 			//cout << eta << " " << N1ksi(eta) << " " << N2ksi(eta) << " " << N3ksi(eta) << " " << N4ksi(eta) << endl;
 			//cout << ksi << " " << N1eta(ksi) << " " << N2eta(ksi) << " " << N3eta(ksi) << " " << N4eta(ksi) << endl;
@@ -392,6 +390,11 @@ void elem4(kwadratury& kwadratury, Elem4& elem) {
 			elem.tabEta[i][1] = N2eta(ksi);
 			elem.tabEta[i][2] = N3eta(ksi);
 			elem.tabEta[i][3] = N4eta(ksi);
+
+			elem.tabFunkcjiKsztaltow[i][0] = N1ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][1] = N2ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][2] = N3ksieta(ksi, eta);
+			elem.tabFunkcjiKsztaltow[i][3] = N4ksieta(ksi, eta);
 
 
 			//cout << eta << " " << N1ksi(eta) << " " << N2ksi(eta) << " " << N3ksi(eta) << " " << N4ksi(eta) << endl;
@@ -1033,6 +1036,8 @@ double **JacobiMatrix(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _n
 
 		//double kt = 300;
 		double kt = globe.Conductivity;
+		double den = globe.Density;
+		double spec = globe.SpecificHeat;
 		//kt = 25;
 
 		//cout << "Ksi: " << ksi << endl;
@@ -1124,7 +1129,7 @@ double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, Gl
 	int nE = newGrid.nE;
 	HforAll = new double** [nE];
 
-	for (int j = 0; j < 4; j++)
+	for (int j = 0; j < nE; j++)
 	{
 		
 		HforAll[j] = new double* [4];
@@ -1163,6 +1168,267 @@ double ***HforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, Gl
 
 	delete[] HforAll;
 	
+}
+
+double** CforElement(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _nrEl, GlobalData& globe)
+{
+	vector <double> x;
+	vector <double> y;
+
+	int nrEl = _nrEl;
+
+	for (int i = 0; i < 4; i++)
+	{
+		int k = newGrid.EL[nrEl].ID[i];
+
+		x.push_back(newGrid.ND[k - 1].x);
+		y.push_back(newGrid.ND[k - 1].y);
+
+	}
+
+	int numberOfPoints = elem.numberOfPoints;
+	int allPointsElem = numberOfPoints * numberOfPoints;
+
+	double*** CNew;
+	CNew = new double** [allPointsElem];
+	for (size_t i = 0; i < allPointsElem; i++)
+	{
+		CNew[i] = new double* [4];
+		for (size_t j = 0; j < 4; j++)
+		{
+			CNew[i][j] = new double[4];
+		}
+	}
+
+	int counter;
+	double eta;
+	double ksi;
+	int k = numberOfPoints;
+
+	double density = globe.Density;
+	double specificHeat = globe.SpecificHeat;
+
+	double** allJacobis;
+	double** C;
+	allJacobis = new double* [allPointsElem];
+	C = new double* [allPointsElem];
+
+	for (int i = 0; i < allPointsElem; i++)
+	{
+		allJacobis[i] = new double[4];
+		C[i] = new double[4];
+
+	}
+
+	for (int i = 0; i < allPointsElem; i++)
+	{
+		if (i % k == 0)
+		{
+			counter = 0;
+		}
+
+		if (k == 2)
+		{
+			ksi = kwadratura.W2p[counter];
+
+			eta = kwadratura.W2p[i / k];
+		}
+		else if (k == 3)
+		{
+			ksi = kwadratura.W3p[counter];
+
+			eta = kwadratura.W3p[i / k];
+		}
+		else if (k == 4)
+		{
+			ksi = kwadratura.W4p[counter];
+			eta = kwadratura.W4p[i / k];
+		}
+
+		//double JacobiMat[2][2];
+		double sumxksi = 0.0;
+		double sumyksi = 0.0;
+		double sumxeta = 0.0;
+		double sumyeta = 0.0;
+
+		for (int j = 0; j < 4; j++)
+		{
+			sumxksi += elem.tabKsi[i][j] * x[j] / 1.0;
+			sumyksi += elem.tabKsi[i][j] * y[j] / 1.0;
+			sumxeta += elem.tabEta[i][j] * x[j] / 1.0;
+			sumyeta += elem.tabEta[i][j] * y[j] / 1.0;
+
+		}
+
+		allJacobis[i][0] = sumxksi / 1.0;
+		allJacobis[i][1] = sumyksi / 1.0;
+		allJacobis[i][2] = sumxeta / 1.0;
+		allJacobis[i][3] = sumyeta / 1.0;
+
+		double detJ = (allJacobis[i][0] * allJacobis[i][3] - allJacobis[i][1] * allJacobis[i][2]) / 1.0;
+		//cout << detJ << " ";
+
+		for (int j = 0; j < 4; j++)
+		{
+			for (int k = 0; k < 4; k++)
+			{
+				double wyn = density * elem.tabFunkcjiKsztaltow[i][j] * elem.tabFunkcjiKsztaltow[i][k] * specificHeat;
+				CNew[i][j][k] = wyn * ksi * eta * detJ;
+			}
+				
+		}
+		counter++;
+
+	}
+
+	double suma;
+
+	for (int i = 0; i < 4; i++)
+	{
+		suma = 0;
+
+		for (int j = 0; j < 4; j++)
+		{
+			suma = CNew[0][i][j];
+
+
+			for (int k = 1; k < allPointsElem; k++)
+			{
+				suma += CNew[k][i][j];
+
+			}
+
+
+
+			C[i][j] = suma;
+			//cout << C[i][j] << " ";
+		}
+		//cout << endl;
+	}
+
+	return C;
+
+}
+
+double*** CforAllElements(Elem4& elem, grid& newGrid, kwadratury& kwadratura, GlobalData& globe)
+{
+	double*** CforAll;
+	int nE = newGrid.nE;
+	CforAll = new double** [nE];
+
+	for (int j = 0; j < nE; j++)
+	{
+
+		CforAll[j] = new double* [4];
+
+		for (int k = 0; k < 4; k++)
+		{
+			CforAll[k] = new double* [4];
+		}
+	}
+
+	//int i = 0; i < newGrid.nE; i++
+	for (int i = 0; i < newGrid.nE; i++)
+	{
+
+		CforAll[i] = CforElement(elem, newGrid, kwadratura, i, globe);
+
+	}
+
+	//int i = 0; i < newGrid.nE; i++
+	for (int i = 0; i < newGrid.nE; i++)
+	{
+		//cout << "Macierz lokalna C dla elementu nr [" << i + 1 << "]" << endl;
+		for (int j = 0; j < 4; j++)
+		{
+			for (int k = 0; k < 4; k++)
+			{
+				//cout << CforAll[i][j][k] << " | ";
+			}
+			//cout << endl;
+		}
+
+		//cout << endl << endl;
+	}
+
+	return CforAll;
+
+	delete[] CforAll;
+}
+
+double** CGlobal(double*** HforAllElements, grid& newGrid)
+{
+	int countOfNodes = newGrid.nN;
+
+	double** CGlobal;
+	CGlobal = new double* [countOfNodes];
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		CGlobal[i] = new double[countOfNodes];
+	};
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		for (int j = 0; j < countOfNodes; j++)
+		{
+			CGlobal[i][j] = 0;
+		}
+	}
+
+
+
+	//int el = 0; el < newGrid.nE; el++
+	for (int el = 0; el < newGrid.nE; el++)
+	{
+
+		vector <int> ID;
+
+		//dla kazdego elementu wczytujemy ID
+		for (int i = 0; i < 4; i++)
+		{
+			int k = newGrid.EL[el].ID[i];
+			//cout << k << " | ";
+			ID.push_back(k);
+		}
+
+		//cout << endl;
+
+		for (int j = 0; j < 4; j++)
+		{
+
+			for (int k = 0; k < 4; k++)
+			{
+
+				CGlobal[ID[j] - 1][ID[k] - 1] += HforAllElements[el][j][k];
+				//cout << HGlobal[ID[j]-1][ID[k]-1] << endl;
+			}
+			//cout << endl;
+
+		}
+
+	}
+
+
+	cout << "\n\nMacierz globalna C: " << endl;
+	cout << "-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|" << endl << endl;
+
+	for (int i = 0; i < countOfNodes; i++)
+	{
+		//cout << i << "[] ";
+		for (int j = 0; j < countOfNodes; j++)
+		{
+			cout << CGlobal[i][j] << "  |";
+
+		}
+		cout << endl;
+	}
+	cout << endl;
+	return CGlobal;
+
+	delete[] CGlobal;
+	delete[] HforAllElements;
+
 }
 
 double *PforElement(Elem4& elem, grid& newGrid, kwadratury& kwadratura, int _nrEl, GlobalData& globe)
@@ -1477,6 +1743,7 @@ double** HGlobal(double ***HforAllElements, grid& newGrid) {
 		//cout << i << "[] ";
 		for (int j = 0; j < countOfNodes; j++)
 		{
+				
 				cout << HGlobal[i][j] << "  |";
 			
 		}
@@ -1489,6 +1756,36 @@ double** HGlobal(double ***HforAllElements, grid& newGrid) {
 	delete[] HforAllElements;
 
 }
+
+double** HCdT(double** HGlobal, double** CGlobal, grid& newGrid, GlobalData& globe)
+{
+	int k = newGrid.nN;
+	double** HCdt;
+	HCdt = new double* [k];
+
+	double dT = globe.SimulationStepTime;
+
+	for (int i = 0; i < k; i++)
+	{
+		HCdt[i] = new double[k];
+	}
+
+	cout << "\nMacierz [H] + [C]/dT\n===============================================\n\n";
+	for (int i = 0; i < k; i++)
+	{
+		for (int j = 0; j <k; j++)
+		{
+			//cout << HGlobal[i][j] << " | " << CGlobal[i][j];
+			HCdt[i][j] = HGlobal[i][j] + CGlobal[i][j] / dT;
+			cout << HCdt[i][j] <<  " | ";
+		}
+		cout << endl;
+	}
+	cout << endl;
+
+	return HCdt;
+}
+
 
 double* PGlobal(double **PforAllElements, grid& newGrid)
 {
@@ -1551,52 +1848,146 @@ double* PGlobal(double **PforAllElements, grid& newGrid)
 	return PGlobal;
 }
 
-void tVector(double** HGlobalArray, double* PGlobalArray, grid& newGrid)
+double* tVector(double** HGlobalArray, double* PGlobalArray, grid& newGrid)
 {
+	double** CopyGlobal = HGlobalArray;
+	CopyGlobal = new double* [newGrid.nN];
+	for (int i = 0; i < newGrid.nN; i++)
+	{
+		CopyGlobal[i] = new double[newGrid.nN];
+	}
+
+	for (int i = 0; i < newGrid.nN; i++)
+	{
+		for (int j = 0; j < newGrid.nN; j++)
+		{
+			CopyGlobal[i][j] = HGlobalArray[i][j];
+		}
+	}
+
+	double* CopyPGlobal;
+	CopyPGlobal = new double[newGrid.nN];
+
+	for (int i = 0; i < newGrid.nN; i++)
+	{
+		CopyPGlobal[i] = PGlobalArray[i];
+	}
+
 	int numberOfNodes = newGrid.nN;
-	vector<double> t(numberOfNodes);
+	//vector<double> t(numberOfNodes);
+	double* t;
+	t = new double[numberOfNodes];
 	
+	//cout << HGlobalArray[0][0] << " Global Array \n\n";
 	for (int i = 0; i < numberOfNodes; i++)
 	{
-		double pivot = HGlobalArray[i][i];
+		double pivot = CopyGlobal[i][i];
 
 		for (int j = 0; j < numberOfNodes; j++)
 		{
-			HGlobalArray[i][j] /= pivot;
+			CopyGlobal[i][j] /= pivot;
 		}
-		PGlobalArray[i] /= pivot;
+		CopyPGlobal[i] /= pivot;
 
 		for (int k = 0; k < numberOfNodes; k++)
 		{
 			if (k != i)
 			{
-				double factor = HGlobalArray[k][i];
+				double factor = CopyGlobal[k][i];
 				for (int j = 0; j < numberOfNodes; j++)
 				{
-					HGlobalArray[k][j] -= factor * HGlobalArray[i][j];
+					CopyGlobal[k][j] -= factor * CopyGlobal[i][j];
 				}
-				PGlobalArray[k] -= factor * PGlobalArray[i];
+				CopyPGlobal[k] -= factor * CopyPGlobal[i];
 			}
 		}
 	}
 
 	for (int i = numberOfNodes -1; i >=0; i--)
 	{
-		t[i] = PGlobalArray[i];
+		t[i] = CopyPGlobal[i];
 		for (int j = i+1; j < numberOfNodes; j++)
 		{
-			t[i] -= HGlobalArray[i][j] * t[j];
+			t[i] -= CopyGlobal[i][j] * t[j];
 		}
 	}
 
-	cout << "Wektor {t}" << endl;
+	/*cout << "Wektor {t}" << endl;
 	for (int i = 0; i < numberOfNodes; i++)
 	{
 		cout << t[i] << " ";
-	}
+	}*/
+
+	return t;
 }
 
-//lab1
+
+void vectorP(double** C, double* P,double** HC, grid& newGrid, GlobalData& globe)
+{
+	int N = newGrid.nN;
+	double* t;
+	double* Pnew;
+	t = new double[N];
+	Pnew = new double[N];
+
+	for (int i = 0; i < N; i++)
+	{
+		t[i] = globe.InitialTemp;
+		Pnew[i] = 0;
+	}
+
+		double** Copy;
+	Copy = new double* [N];
+	for (int i = 0; i < N; i++)
+	{
+		Copy[i] = new double[N];
+	}
+
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			Copy[i][j] = C[i][j] / globe.SimulationStepTime;
+		}
+	}
+	
+	for (int iteration = globe.SimulationStepTime; iteration <= globe.SimulationTime; iteration += globe.SimulationStepTime)
+	{
+		for (int el = 0; el < N; el++)
+		{
+			Pnew[el] = 0;
+		}
+	
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+		{
+			Pnew[i] += Copy[i][j] * t[j];
+		}
+	}
+
+	for (int i = 0; i < N; i++)
+	{
+		Pnew[i] += P[i];
+	}
+
+	t = tVector(HC, Pnew, newGrid);
+
+	double min = t[0];
+	double max = t[0];
+	for (int k = 1; k < N; k++)
+	{
+		min = std::min(min, t[k]);
+		max = std::max(max, t[k]);
+	}
+
+	cout << iteration << "\t" << min << "\t\t" << max << endl;
+	
+	}
+
+}
+
+//lab1  
 void createNodes(grid& nowa, GlobalData& globe, int nodesNumber, ifstream& odczyt) {
 	for (int i = 0; i < nodesNumber; i++)
 	{
@@ -1830,7 +2221,24 @@ int main()
 	PforAllElementss = PforAllElements(elem, newGrid, kwadratura, global);
 	double* PGlobalArrray = PGlobal(PforAllElementss, newGrid);
 
-	tVector(HGlobalArray, PGlobalArrray, newGrid);
+	//wektor T
+	double* t0;
+	t0 = tVector(HGlobalArray, PGlobalArrray, newGrid);
+
+	//CforElement
+	double*** CforAllElementss;
+	CforAllElementss = CforAllElements(elem, newGrid, kwadratura, global);
+	double** CGlobalArray = CGlobal(CforAllElementss, newGrid);
+
+
+	//HCdT(double** HGlobal, double** CGlobal, grid& newGrid, GlobalData& globe)
+	double** HCArray;
+	HCArray = HCdT(HGlobalArray, CGlobalArray, newGrid, global);
+
+	vectorP(CGlobalArray, PGlobalArrray, HCArray, newGrid, global);
+	
+
+	
 
 
 }
