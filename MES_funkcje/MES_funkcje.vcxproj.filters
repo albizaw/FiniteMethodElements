@@ -18,6 +18,12 @@
     <ClCompile Include="Źródło.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="funkcjeKsztaltow.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="macierzH.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\MES_1\MES_1\Test1_4_4.txt">
@@ -29,5 +35,13 @@
     <Text Include="..\..\MES_1\MES_1\Test3_31_31_kwadrat.txt">
       <Filter>Pliki źródłowe</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="funkcjeKsztaltow.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
+    <ClInclude Include="macierzH.h">
+      <Filter>Pliki nagłówkowe</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

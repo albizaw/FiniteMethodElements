@@ -139,12 +139,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="funkcjeKsztaltow.cpp" />
+    <ClCompile Include="macierzH.cpp" />
     <ClCompile Include="Źródło.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\MES_1\MES_1\Test1_4_4.txt" />
     <Text Include="..\..\MES_1\MES_1\Test2_4_4_MixGrid.txt" />
     <Text Include="..\..\MES_1\MES_1\Test3_31_31_kwadrat.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="funkcjeKsztaltow.h" />
+    <ClInclude Include="macierzH.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
